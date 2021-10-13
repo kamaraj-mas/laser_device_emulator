@@ -7,6 +7,7 @@
 const unsigned int KeepAliveTimeoutPeriodInSeconds = 5;
 const unsigned int ThreadTimeoutPeriodInSeconds = 1;
 
+//Class which holds the laser status.
 class LaserDevice
 {
 private:

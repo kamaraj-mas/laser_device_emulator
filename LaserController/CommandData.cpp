@@ -1,7 +1,6 @@
 #include "CommandData.h"
 
-CommandCode CommandData::GetCommandCode()
-{
+CommandCode CommandData::GetCommandCode(){
     if (command == "STR")
         return CommandCode::START;
     if (command == "STP")
@@ -22,7 +21,6 @@ CommandCode CommandData::GetCommandCode()
         return CommandCode::UNKNOWN;
 }
 
-std::string CommandData::GetCommandAsString()
-{
+std::string CommandData::GetCommandAsString(){
     return command;
 };

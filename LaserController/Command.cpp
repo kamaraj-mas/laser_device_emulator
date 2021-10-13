@@ -1,7 +1,6 @@
 #include "Command.h"
 
-void StartLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const
-{
+void StartLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
     std::string returnValue = cmd.command;
     if (device.startLaser()) {
         returnValue += "#";
@@ -15,8 +14,7 @@ void StartLaser::execute(LaserDevice& device, CommandData& cmd, std::function<vo
     }
 }
 
-void StopLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const
-{
+void StopLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
     std::string returnValue = cmd.command;
     if (device.stopLaser()){
         returnValue += "#";

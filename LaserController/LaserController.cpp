@@ -68,7 +68,7 @@ void LaserController::Run() {
     std::string commandString;
     
     //Thread to track of Keep Alive message
-    monitorThread = new std::thread(&LaserDevice::monitorLaserActivity, &device);
+    monitorThread = std::make_unique<std::thread>(&LaserDevice::monitorLaserActivity, &device);
 
     //Main input reader loop to accept laser command
     while (!std::getline(std::cin, commandString).eof()) {
@@ -83,7 +83,6 @@ void LaserController::Run() {
         parseCommandData(commandString, commandData);
 
         //Create command object
-        std::unique_ptr<Command> cmd = nullptr;
         cmd = CreateCommand(commandData.GetCommandCode());
 
         if (cmd != nullptr) {
