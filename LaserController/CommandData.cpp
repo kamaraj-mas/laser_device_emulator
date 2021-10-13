@@ -1,4 +1,4 @@
-#include "Data.h"
+#include "CommandData.h"
 
 CommandCode CommandData::GetCommandCode()
 {

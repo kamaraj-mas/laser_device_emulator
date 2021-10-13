@@ -43,7 +43,7 @@ void LaserStatus::execute(LaserDevice& device, CommandData& cmd, std::function<v
 void SetLaserPower::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
     std::string returnValues = cmd.command;
     
-    //input value is must for SetLaserPower command
+    //input value is mandatory for SetLaserPower command
     if (cmd.parameters.size() > 0 && device.setLaserPower(atoi(cmd.parameters[0].c_str()))) {
             returnValues += "#";
     }
@@ -59,7 +59,7 @@ void SetLaserPower::execute(LaserDevice& device, CommandData& cmd, std::function
 void GetLaserPower::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
     std::string returnValues = cmd.command;
     returnValues += "|";
-    if(!device.isLaserActive()){
+    if(!device.isLaserActive()){ //Return 0 if laser is turned OFF
         returnValues += "0";
     }
     else {
@@ -94,4 +94,9 @@ void KeepAlive::execute(LaserDevice& device, CommandData& cmd, std::function<voi
     returnValues += "#";
     if (Callback)
         Callback(returnValues);
+}
+
+void Unknown::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
+    if (Callback)
+        Callback("UK!");
 }

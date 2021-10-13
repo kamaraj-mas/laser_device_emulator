@@ -3,7 +3,7 @@
 #include "LaserDevice.h"
 #include <functional>
 #include <string>
-#include "Data.h"
+#include "CommandData.h"
 
 //Abstract class for the commands
 class Command{
@@ -50,6 +50,11 @@ public:
 };
 
 class KeepAlive :public Command {
+public:
+    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+};
+
+class Unknown :public Command {
 public:
     void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
 };

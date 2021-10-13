@@ -3,13 +3,17 @@
 #include <chrono>
 #include <thread>
 
+
+const unsigned int KeepAliveTimeoutPeriodInSeconds = 5;
+const unsigned int ThreadTimeoutPeriodInSeconds = 1;
+
 class LaserDevice
 {
 private:
     short laserPower = 0;
     bool laserStarted = false;
     bool sillyModeOn = false;
-
+    bool threadHasToDie = false;
     std::chrono::time_point<std::chrono::system_clock> timeWhenLastKeepAliveReceived;
     bool IsWithinTheBounds(short value, short low, short high);
 public:
@@ -24,4 +28,5 @@ public:
     void setSillyModeOFF();
     void resetTimer();
     void monitorLaserActivity();
+    void terminateThread();
 };

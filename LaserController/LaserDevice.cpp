@@ -63,19 +63,25 @@ void LaserDevice::resetTimer(){
     timeWhenLastKeepAliveReceived = std::chrono::system_clock::now();
 }
 
-//Monitor thread to 
+//Monitor thread to track Keep alive command
 void LaserDevice::monitorLaserActivity(){
     //For now, make this loop run indefinitely
-    while (true){
+    while (!threadHasToDie){
         //wait for 1 sec
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
 
         //Check if the keep alive received within allowed 5 seconds time
         std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - timeWhenLastKeepAliveReceived;
-        if(elapsed_seconds.count() > 5){
+        if(elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds){
             if (laserStarted) {
                 stopLaser();
             }
         }
     }
+}
+
+void LaserDevice::terminateThread()
+{
+    //set the flag to gracefully terminate the monitor thread
+    threadHasToDie = true;
 }
