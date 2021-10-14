@@ -1,5 +1,6 @@
 #include "LaserDevice.h"
 #include <iostream>
+#include <mutex>
 
 LaserDevice::LaserDevice() :timeWhenLastKeepAliveReceived(std::chrono::system_clock::now())
 {
@@ -66,22 +67,29 @@ void LaserDevice::resetTimer(){
 //Monitor thread to track Keep alive command
 void LaserDevice::monitorLaserActivity(){
     //For now, make this loop run indefinitely
-    while (!threadHasToDie){
-        //wait for 1 sec
-        std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
+    try {
+        while (!threadHasToDie) {
+            //wait for 1 sec
+            std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
 
-        //Check if the keep alive received within allowed 5 seconds time
-        std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - timeWhenLastKeepAliveReceived;
-        if(elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds){
-            if (laserStarted) {
-                stopLaser();
+            //Check if the keep alive received within allowed 5 seconds time
+            std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - timeWhenLastKeepAliveReceived;
+            if (elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds) {
+                if (laserStarted) {
+                    stopLaser();
+                }
             }
         }
+    }
+    catch (std::exception e) {
+        std::cout << "monitorLaserActivity:Crash handled with Error Msg: " << e.what();
     }
 }
 
 void LaserDevice::terminateThread()
 {
+    std::mutex mX;
+    std::lock_guard<std::mutex> guard(mX);
     //set the flag to gracefully terminate the monitor thread
     threadHasToDie = true;
 }

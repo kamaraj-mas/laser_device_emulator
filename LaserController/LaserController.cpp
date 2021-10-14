@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include "IOInterface.h"
 
 void LaserController::parseCommandData(std::string CommandString, CommandData& Cmd)
 {
@@ -66,33 +67,45 @@ std::unique_ptr<Command> LaserController::CreateCommand(CommandCode code)
 
 void LaserController::Run() {
     std::string commandString;
-    
+
     //Thread to track of Keep Alive message
     monitorThread = std::make_unique<std::thread>(&LaserDevice::monitorLaserActivity, &device);
 
-    //Main input reader loop to accept laser command
-    while (!std::getline(std::cin, commandString).eof()) {
+    //Get input from STD IO Reader
+    std::unique_ptr<IOInterface> ioInterface = std::make_unique<StdIOReader>();
 
-        //Reverse the command if the device is on silly mode
-        if (device.isSillyModeOn()) {
-            std::reverse(commandString.begin(), commandString.end());
+    try {
+
+        //Main input reader loop to accept laser command
+        while (!ioInterface->getInputCommand(commandString)) {
+
+            //Reverse the command if the device is on silly mode
+            if (device.isSillyModeOn()) {
+                std::reverse(commandString.begin(), commandString.end());
+            }
+
+            //Parse command & values from the input string
+            CommandData commandData;
+            parseCommandData(commandString, commandData);
+
+            //Create command object
+            cmd = CreateCommand(commandData.GetCommandCode());
+
+            if (cmd != nullptr) {
+                cmd->execute(device, commandData, [&](std::string response) {
+                    response += "\n";
+                    ioInterface->sendResponse(response);
+                    }
+                );
+
+                //Cleanup the command pointer before going for another action
+                cmd.reset();
+            }
         }
-
-        //Parse command & values from the input string
-        CommandData commandData;
-        parseCommandData(commandString, commandData);
-
-        //Create command object
-        cmd = CreateCommand(commandData.GetCommandCode());
-
-        if (cmd != nullptr) {
-            cmd->execute(device, commandData, [](std::string response) {
-                std::cout << response << "\n";
-                }
-            );
-        }
-
-        cmd.reset();
+    }
+    catch (std::exception e)
+    {
+        std::cout << "LaserController::Run(): Exception occurred:" << e.what();
     }
 
     device.terminateThread();

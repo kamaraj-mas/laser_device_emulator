@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="CommandData.cpp" />
+    <ClCompile Include="IOInterface.cpp" />
     <ClCompile Include="LaserController.cpp" />
     <ClCompile Include="LaserDevice.cpp" />
     <ClCompile Include="Emulator.cpp" />
@@ -148,8 +149,14 @@
   <ItemGroup>
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandData.h" />
+    <ClInclude Include="IOInterface.h" />
     <ClInclude Include="LaserController.h" />
     <ClInclude Include="LaserDevice.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
