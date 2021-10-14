@@ -103,7 +103,7 @@ void LaserController::Run() {
             }
         }
     }
-    catch (std::exception e)
+    catch (const std::exception& e)
     {
         std::cout << "LaserController::Run(): Exception occurred:" << e.what();
     }

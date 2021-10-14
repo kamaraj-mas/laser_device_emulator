@@ -81,7 +81,7 @@ void LaserDevice::monitorLaserActivity(){
             }
         }
     }
-    catch (std::exception e) {
+    catch (const std::exception e) {
         std::cout << "monitorLaserActivity:Crash handled with Error Msg: " << e.what();
     }
 }
