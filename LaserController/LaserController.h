@@ -8,7 +8,6 @@ class LaserController
 private:
     void parseCommandData(std::string CommandString, CommandData& Cmd);
     std::unique_ptr<Command> CreateCommand(CommandCode code);
-    std::unique_ptr<Command> cmd = nullptr;
 public:
     LaserController() = default;
     LaserDevice device;

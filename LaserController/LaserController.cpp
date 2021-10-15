@@ -89,8 +89,8 @@ void LaserController::Run() {
             parseCommandData(commandString, commandData);
 
             //Create command object
+            std::unique_ptr<Command> cmd = nullptr;
             cmd = CreateCommand(commandData.GetCommandCode());
-
             if (cmd != nullptr) {
                 cmd->execute(device, commandData, [&](std::string response) {
                     response += "\n";
