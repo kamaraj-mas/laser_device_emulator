@@ -8,5 +8,5 @@ int main()
 {
     //Instantiate and start the controller 
     LaserController controller;
-    controller.Run();
+    controller.run();
 }

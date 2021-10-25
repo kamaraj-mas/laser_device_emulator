@@ -30,4 +30,5 @@ public:
     void resetTimer();
     void monitorLaserActivity();
     void terminateThread();
+    std::chrono::duration<double> getTimeElapsedSinceLastKeepAliveMessage();
 };

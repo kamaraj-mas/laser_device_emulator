@@ -6,56 +6,63 @@
 #include "CommandData.h"
 
 //Abstract class for the commands
+
+using CallbackMethod = typename std::function<void(std::string)>;
+
 class Command{
+protected:
+    const char successIndicator = '#';
+    const char failureIndicator = '!';
+    const char delimiter = '|';
 public:
     virtual ~Command() {
     }
     //Handler method for the specific command.
-    virtual void execute(LaserDevice& device, CommandData& cmd, std::function<void (std::string)> Callback) const = 0;
+    virtual std::string execute(LaserDevice& device, CommandData& cmd) const = 0;
 };
 
-class StartLaser :public Command{
+class StartCommand :public Command{
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class StopLaser :public Command {
+class StopCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class LaserStatus :public Command {
+class StatusCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class SetLaserPower :public Command {
+class SetPowerCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class GetLaserPower :public Command {
+class GetPowerCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class EnableSillyMode:public Command {
+class EnableSillyModeCommand:public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class DisableSillyMode :public Command {
+class DisableSillyModeCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class KeepAlive :public Command {
+class KeepAliveCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 
-class Unknown :public Command {
+class UnknownCommand :public Command {
 public:
-    void execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const;
+    std::string execute(LaserDevice& device, CommandData& cmd) const;
 };
 

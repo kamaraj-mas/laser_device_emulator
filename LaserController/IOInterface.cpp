@@ -3,12 +3,12 @@
 #include <sstream>
 #include <iostream>
 
-bool StdIOReader::getInputCommand(std::string& commandString)
+bool StdIOHandler::getInputCommand(std::string& commandString)
 {
     return std::getline(std::cin, commandString).eof();
 }
 
-void StdIOReader::sendResponse(std::string response)
+void StdIOHandler::sendResponse(std::string response)
 {
-    std::cout << response;
+    std::cout << response <<"\n";
 }

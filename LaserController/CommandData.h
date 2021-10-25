@@ -17,6 +17,7 @@ enum class CommandCode
     UNKNOWN
 };
 
+
 //class to hold Command & parameters
 struct CommandData {
     std::string command;

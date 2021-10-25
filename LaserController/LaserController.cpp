@@ -5,14 +5,14 @@
 #include <sstream>
 #include "IOInterface.h"
 
-void LaserController::parseCommandData(std::string CommandString, CommandData& Cmd)
+void LaserController::parseCommandDataFromString(std::string CommandString, CommandData& Cmd)
 {
     //Parse laser command
     std::stringstream ss(CommandString);
     std::string subString;
-
+    char delimiter = '|';
     //run the loop until '
-    while (std::getline(ss, subString, '|'))
+    while (std::getline(ss, subString, delimiter))
     {
         //First string would be command
         if (Cmd.command.empty())
@@ -32,31 +32,31 @@ std::unique_ptr<Command> LaserController::CreateCommand(CommandCode code)
     switch (code)
     {
     case CommandCode::START:
-        cmd = std::make_unique<StartLaser>();
+        cmd = std::make_unique<StartCommand>();
         break;
     case CommandCode::STOP:
-        cmd = std::make_unique <StopLaser>();
+        cmd = std::make_unique <StopCommand>();
         break;
     case CommandCode::GET_LASER_POWER:
-        cmd = std::make_unique <GetLaserPower>();
+        cmd = std::make_unique <GetPowerCommand>();
         break;
     case  CommandCode::SET_LASER_POWER:
-        cmd =std::make_unique <SetLaserPower>();
+        cmd =std::make_unique <SetPowerCommand>();
         break;
     case CommandCode::ENABLE_SILLY_MODE:
-        cmd =std::make_unique <EnableSillyMode>();
+        cmd =std::make_unique <EnableSillyModeCommand>();
         break;
     case  CommandCode::DISABLE_SILLY_MODE:
-        cmd =std::make_unique <DisableSillyMode>();
+        cmd =std::make_unique <DisableSillyModeCommand>();
         break;
     case  CommandCode::STATUS:
-        cmd =std::make_unique <LaserStatus>();
+        cmd =std::make_unique <StatusCommand>();
         break;
     case CommandCode::KEEP_ALIVE:
-        cmd =std::make_unique <KeepAlive>();
+        cmd =std::make_unique <KeepAliveCommand>();
         break;
     case CommandCode::UNKNOWN:
-        cmd = std::make_unique <Unknown>();
+        cmd = std::make_unique <UnknownCommand>();
         break;
     default:
         break;
@@ -65,17 +65,18 @@ std::unique_ptr<Command> LaserController::CreateCommand(CommandCode code)
     return cmd;
 }
 
-void LaserController::Run() {
+void LaserController::run() {
+    
     std::string commandString;
 
     //Thread to track of Keep Alive message
-    monitorThread = std::make_unique<std::thread>(&LaserDevice::monitorLaserActivity, &device);
+    auto deviceMonitorThread = std::make_unique<std::thread>(&LaserController::monitorThread, this);
 
     //Get input from STD IO Reader
-    std::unique_ptr<IOInterface> ioInterface = std::make_unique<StdIOReader>();
+    //Create Interface pointer using a Factory method.
+    std::unique_ptr<IOInterface> ioInterface = std::make_unique<StdIOHandler>();
 
     try {
-
         //Main input reader loop to accept laser command
         while (!ioInterface->getInputCommand(commandString)) {
 
@@ -86,20 +87,17 @@ void LaserController::Run() {
 
             //Parse command & values from the input string
             CommandData commandData;
-            parseCommandData(commandString, commandData);
+            parseCommandDataFromString(commandString, commandData);
 
             //Create command object
             std::unique_ptr<Command> cmd = nullptr;
             cmd = CreateCommand(commandData.GetCommandCode());
             if (cmd != nullptr) {
-                cmd->execute(device, commandData, [&](std::string response) {
-                    response += "\n";
-                    ioInterface->sendResponse(response);
-                    }
-                );
-
+                std::string response = cmd->execute(device, commandData);
+                ioInterface->sendResponse(response);
                 //Cleanup the command pointer before going for another action
                 cmd.reset();
+                commandString.clear();
             }
         }
     }
@@ -108,16 +106,36 @@ void LaserController::Run() {
         std::cout << "LaserController::Run(): Exception occurred:" << e.what();
     }
 
-    device.terminateThread();
+    //Terminate the monitor thread
+    monitorThreadHasToDie = true;
     
-    if (monitorThread->joinable()) {
-        monitorThread->join();
+    if (deviceMonitorThread != nullptr && deviceMonitorThread->joinable()) {
+        deviceMonitorThread->join();
     }
 }
 
 LaserController::~LaserController()
 {
-    if (monitorThread->joinable()) {
-        monitorThread->join();
+}
+
+//Monitor thread to track Keep alive command
+void LaserController::monitorThread() {
+    //For now, make this loop run indefinitely
+    try {
+        while (!monitorThreadHasToDie) {
+            //wait for 1 sec
+            std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
+
+            //Check if the keep alive received within allowed 5 seconds time
+            std::chrono::duration<double> elapsed_seconds = device.getTimeElapsedSinceLastKeepAliveMessage();
+            if (elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds) {
+                if (device.isLaserActive()) {
+                    device.stopLaser();
+                }
+            }
+        }
+    }
+    catch (const std::exception e) {
+        std::cout << "monitorLaserActivity:Crash handled with Error Msg: " << e.what();
     }
 }

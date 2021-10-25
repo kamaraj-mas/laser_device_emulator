@@ -6,13 +6,14 @@
 class LaserController
 {
 private:
-    void parseCommandData(std::string CommandString, CommandData& Cmd);
+    void parseCommandDataFromString(std::string CommandString, CommandData& Cmd);
     std::unique_ptr<Command> CreateCommand(CommandCode code);
+    void monitorThread();
+    bool monitorThreadHasToDie = false;
 public:
     LaserController() = default;
     LaserDevice device;
-    std::unique_ptr<std::thread> monitorThread = nullptr;
-    void Run();
+    void run();
     ~LaserController();
 };
 

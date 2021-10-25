@@ -75,7 +75,7 @@ void LaserDevice::monitorLaserActivity(){
             //Check if the keep alive received within allowed 5 seconds time
             std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - timeWhenLastKeepAliveReceived;
             if (elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds) {
-                if (laserStarted) {
+                if (isLaserActive()) {
                     stopLaser();
                 }
             }
@@ -86,6 +86,10 @@ void LaserDevice::monitorLaserActivity(){
     }
 }
 
+std::chrono::duration<double> LaserDevice::getTimeElapsedSinceLastKeepAliveMessage()
+{
+    return std::chrono::system_clock::now() - timeWhenLastKeepAliveReceived;
+}
 void LaserDevice::terminateThread()
 {
     std::mutex mX;

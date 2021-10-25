@@ -1,100 +1,87 @@
 #include "Command.h"
 
-void StartLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
+std::string StartCommand::execute(LaserDevice& device, CommandData& cmd) const{
     std::string returnValue = cmd.command;
     if (device.startLaser()) {
-        returnValue += "#";
+        returnValue += successIndicator;
     }
     else {
-        returnValue += "!";
+        returnValue += failureIndicator;
     }
 
-    if (Callback) {
-        Callback(returnValue);
-    }
+    return returnValue;
 }
 
-void StopLaser::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
+std::string StopCommand::execute(LaserDevice& device, CommandData& cmd) const{
     std::string returnValue = cmd.command;
     if (device.stopLaser()){
-        returnValue += "#";
+        returnValue += successIndicator;
     }
     else{
-        returnValue += "!";
+        returnValue += failureIndicator;
     }
 
-    if (Callback) {
-        Callback(returnValue);
-    }
-
+    return returnValue;
 }
 
-void LaserStatus::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
-    std::string returnValues = cmd.command;
+std::string StatusCommand::execute(LaserDevice& device, CommandData& cmd) const{
+    std::string returnValue = cmd.command;
     //set 1 if laser is active, otherwise set 0
-    returnValues+=device.isLaserActive() ? "1" : "0";
-    if (Callback) {
-        Callback(returnValues);
-    }
+    returnValue +=device.isLaserActive() ? "1" : "0";
+    returnValue += successIndicator;
+    return returnValue;
 }
 
-void SetLaserPower::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
-    std::string returnValues = cmd.command;
+std::string SetPowerCommand::execute(LaserDevice& device, CommandData& cmd) const {
+    std::string returnValue = cmd.command;
     
     //input value is mandatory for SetLaserPower command
     if (cmd.parameters.size() > 0 && device.setLaserPower(atoi(cmd.parameters[0].c_str()))) {
-            returnValues += "#";
+        returnValue += successIndicator;
     }
     else{
-        returnValues += "!";
+        returnValue += failureIndicator;
     }
 
-    if (Callback) {
-        Callback(returnValues);
-    }
+    return returnValue;
 }
 
-void GetLaserPower::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
-    std::string returnValues = cmd.command;
-    returnValues += "|";
+std::string GetPowerCommand::execute(LaserDevice& device, CommandData& cmd) const {
+    std::string returnValue = cmd.command;
+    returnValue += delimiter;
     if(!device.isLaserActive()){ //Return 0 if laser is turned OFF
-        returnValues += "0";
+        returnValue += "0";
     }
     else {
-        returnValues += std::to_string(device.getLaserPower());
+        returnValue += std::to_string(device.getLaserPower());
     }
-
-    if (Callback) {
-        Callback(returnValues);
-    }
+    
+    returnValue += successIndicator;
+    return returnValue;
 }
 
-void EnableSillyMode::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
-    std::string returnValues = cmd.command;
+std::string EnableSillyModeCommand::execute(LaserDevice& device, CommandData& cmd) const {
+    std::string returnValue = cmd.command;
     device.setSillyModeOn();
-    returnValues += "#";
-    if (Callback)
-        Callback(returnValues);
+    returnValue += successIndicator;
+    return returnValue;
 }
 
-void DisableSillyMode::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
-    std::string returnValues = cmd.command;
+std::string DisableSillyModeCommand::execute(LaserDevice& device, CommandData& cmd) const {
+    std::string returnValue = cmd.command;
     device.setSillyModeOFF();
-    returnValues += "#";
-    if (Callback)
-        Callback(returnValues);
+    returnValue += successIndicator;
+    return returnValue;
 }
  
-void KeepAlive::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const {
-    std::string returnValues = cmd.command;
+std::string KeepAliveCommand::execute(LaserDevice& device, CommandData& cmd) const {
+    std::string returnValue = cmd.command;
     //reset the keep alive timer 
     device.resetTimer();
-    returnValues += "#";
-    if (Callback)
-        Callback(returnValues);
+    returnValue += successIndicator;
+    return returnValue;
 }
 
-void Unknown::execute(LaserDevice& device, CommandData& cmd, std::function<void(std::string)> Callback) const{
-    if (Callback)
-        Callback("UK!");
+std::string UnknownCommand::execute(LaserDevice& device, CommandData& cmd) const{
+    return "UK!";
 }

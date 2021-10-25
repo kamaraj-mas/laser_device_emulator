@@ -11,10 +11,10 @@ public:
 };
 
 //Subclass to read command from Standard IO
-class StdIOReader : public IOInterface
+class StdIOHandler : public IOInterface
 {
 public:
-    StdIOReader() = default;
+    StdIOHandler() = default;
     bool getInputCommand(std::string& commandString);
     void sendResponse(std::string response);
 };
