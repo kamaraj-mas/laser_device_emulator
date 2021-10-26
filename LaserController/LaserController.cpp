@@ -68,7 +68,6 @@ std::unique_ptr<Command> LaserController::CreateCommand(CommandCode code)
 void LaserController::run() {
     
     std::string commandString;
-
     //Thread to track of Keep Alive message
     auto deviceMonitorThread = std::make_unique<std::thread>(&LaserController::monitorThread, this);
 
@@ -90,13 +89,13 @@ void LaserController::run() {
             parseCommandDataFromString(commandString, commandData);
 
             //Create command object
-            std::unique_ptr<Command> cmd = nullptr;
-            cmd = CreateCommand(commandData.GetCommandCode());
-            if (cmd != nullptr) {
-                std::string response = cmd->execute(device, commandData);
+            std::unique_ptr<Command> command = nullptr;
+            command = CreateCommand(commandData.GetCommandCode());
+            if (command != nullptr) {
+                std::string response = command->execute(device, commandData);
                 ioInterface->sendResponse(response);
                 //Cleanup the command pointer before going for another action
-                cmd.reset();
+                command.reset();
                 commandString.clear();
             }
         }
@@ -106,26 +105,27 @@ void LaserController::run() {
         std::cout << "LaserController::Run(): Exception occurred:" << e.what();
     }
 
-    //Terminate the monitor thread
-    monitorThreadHasToDie = true;
-    
+    terminateMonitorThread();
+
     if (deviceMonitorThread != nullptr && deviceMonitorThread->joinable()) {
         deviceMonitorThread->join();
     }
 }
 
-LaserController::~LaserController()
-{
+void LaserController::terminateMonitorThread() {
+    //Terminate the monitor thread
+    std::lock_guard<std::mutex> guard(lock);
+    monitorThreadHasToDie = true;
+}
+LaserController::~LaserController(){
 }
 
 //Monitor thread to track Keep alive command
 void LaserController::monitorThread() {
     //For now, make this loop run indefinitely
-    try {
-        while (!monitorThreadHasToDie) {
-            //wait for 1 sec
-            std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
-
+    while (!monitorThreadHasToDie) {
+        //wait for 1 sec
+        try {
             //Check if the keep alive received within allowed 5 seconds time
             std::chrono::duration<double> elapsed_seconds = device.getTimeElapsedSinceLastKeepAliveMessage();
             if (elapsed_seconds.count() > KeepAliveTimeoutPeriodInSeconds) {
@@ -133,9 +133,10 @@ void LaserController::monitorThread() {
                     device.stopLaser();
                 }
             }
+            std::this_thread::sleep_for(std::chrono::seconds(ThreadTimeoutPeriodInSeconds));
         }
-    }
-    catch (const std::exception e) {
-        std::cout << "monitorLaserActivity:Crash handled with Error Msg: " << e.what();
+        catch (const std::exception& e) {
+            std::cout << "monitorLaserActivity:Exception occurred. Reason: " << e.what();
+        }
     }
 }
